@@ -1,0 +1,101 @@
+replicaCount: 3 
+
+image:
+  repository: ghcr.io/mccutchen/go-httpbin 
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: [] 
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # 指定是否创建 ServiceAccount？
+  create: false 
+  # 如果不创建，将使用 default ServiceAccount 或在此指定已存在的 SA 名称
+  name: "" 
+  # ServiceAccount 的注解
+  annotations: {}
+
+podAnnotations: {}  # 添加到 Pod 的注解
+podLabels: {}       # 添加到 Pod 的额外标签
+
+# Pod 安全上下文
+podSecurityContext: {}
+  # fsGroup: 2000
+
+# 容器安全上下文
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP      # Service 类型 (ClusterIP, NodePort, LoadBalancer)
+  port: 80             # Service 监听端口 (来自 Kustomize resources.yaml)
+  targetPort: http     # 目标 Pod 端口名称 (引用 Deployment 中定义的 containerPort name)
+  # container port for http, defined in deployment template
+  containerPortHttp: 8080 
+  # Service port name
+  portNameHttp: http
+  # 来自 Kustomize resources.yaml 的 appProtocol
+  appProtocolHttp: http 
+
+# Ingress 或 Gateway API 的配置留空，因为这由您的 infra 库管理
+
+# 资源请求和限制 (来自 Kustomize resources.yaml，默认为空)
+resources: {}
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+# HPA 配置
+autoscaling:
+  enabled: false       # 是否启用 HPA
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+
+# NetworkPolicy 配置
+networkPolicy:
+  enabled: false       # 是否创建 NetworkPolicy
+  # 定义 Ingress (入站) 规则列表
+  ingress: 
+    # 示例：允许所有入站 (如果需要限制，请修改或覆盖)
+    # - {} 
+  # 定义 Egress (出站) 规则列表
+  egress:
+    # 示例：允许所有出站 (go-httpbin 通常不需要出站)
+    - {}
+
+# Pod 调度相关配置
+nodeSelector: {}      # Pod 的节点选择器
+tolerations: []       # Pod 的容忍度
+affinity: {}          # Pod 的亲和性/反亲和性
+
+# 探针配置 (来自 Kustomize resources.yaml)
+probes:
+  liveness:
+    enabled: true
+    httpGet:
+      path: /status/200
+      port: http # 引用 containerPort 的 name
+    # initialDelaySeconds: 0
+    # periodSeconds: 10
+    # timeoutSeconds: 1
+    # failureThreshold: 3
+  readiness:
+    enabled: true
+    httpGet:
+      path: /status/200
+      port: http # 引用 containerPort 的 name
+    # initialDelaySeconds: 0
+    # periodSeconds: 10
+    # timeoutSeconds: 1
+    # failureThreshold: 3

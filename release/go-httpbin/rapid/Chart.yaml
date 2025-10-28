@@ -1,0 +1,9 @@
+apiVersion: v2
+name: go-httpbin  
+version: 0.1.0        
+description: ArgoCD release channel for installing go-httpbin application.
+maintainers:
+  - name: John
+    email: johnzhang@geotab.com
+sources:
+  - https://github.com/mccutchen/go-httpbin
